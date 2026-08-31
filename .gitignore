@@ -1,0 +1,39 @@
+# Environment files
+.env
+.env.*
+*.env
+
+# IDE files
+.idea/
+*.iml
+.gradle/
+build/
+out/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Application config
+application-local.yml
+application-dev-local.yml
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Gradle
+gradle.properties
+!gradle/wrapper/gradle-wrapper.jar
+!gradlew
+!gradlew.bat

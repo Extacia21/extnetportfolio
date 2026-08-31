@@ -1,0 +1,15 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+github:
+  sync:
+    cron: 0 */15 * * * *  # Every 15 minutes during development
+
+logging:
+  level:
+    com.extacia.portfolio: DEBUG
+    org.springframework.web: DEBUG

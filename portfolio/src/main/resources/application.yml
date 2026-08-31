@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: portfolio
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+server:
+  port: 8081
+
+github:
+  username: ${GITHUB_USERNAME:Extacia21}
+  token: ${GITHUB_TOKEN:your-token-here}
+  sync:
+    cron: 0 0 */6 * * *
+  api:
+    timeout:
+      connect: 5000
+      read: 10000
+
+logging:
+  level:
+    com.extacia.portfolio: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
