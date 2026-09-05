@@ -1,28 +1,37 @@
-// ===== DOM READY =====
+// ========================================
+// DOM READY
+// ========================================
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-// ===== APP INIT =====
+// ========================================
+// APP INIT
+// ========================================
 function initApp() {
     // Hide loading screen
     setTimeout(() => {
         document.getElementById('loading-screen').classList.add('hidden');
     }, 800);
 
-    // Initialize features
+    // Initialize all features
     initNavigation();
     initThemeToggle();
     initCursorGlow();
     initScrollEffects();
     initFilterButtons();
     initParticles();
+    initContactForm();
     fetchData();
 }
 
-// ===== PARTICLES BACKGROUND =====
+// ========================================
+// PARTICLES BACKGROUND
+// ========================================
 function initParticles() {
     const container = document.getElementById('particlesContainer');
+    if (!container) return;
+
     const colors = ['#6C63FF', '#FF6584', '#00d4ff', '#f39c12', '#2ecc71'];
 
     for (let i = 0; i < 50; i++) {
@@ -40,25 +49,32 @@ function initParticles() {
     }
 }
 
-// ===== NAVIGATION =====
+// ========================================
+// NAVIGATION
+// ========================================
 function initNavigation() {
     const navbar = document.getElementById('navbar');
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
     const links = document.querySelectorAll('.nav-link');
 
-    menuToggle.addEventListener('click', () => {
-        menuToggle.classList.toggle('active');
-        navLinks.classList.toggle('open');
-    });
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    }
 
     links.forEach(link => {
         link.addEventListener('click', () => {
-            menuToggle.classList.remove('active');
-            navLinks.classList.remove('open');
+            if (menuToggle) {
+                menuToggle.classList.remove('active');
+                navLinks.classList.remove('open');
+            }
         });
     });
 
+    // Active link on scroll
     const sections = document.querySelectorAll('section[id]');
 
     window.addEventListener('scroll', () => {
@@ -79,15 +95,20 @@ function initNavigation() {
     });
 }
 
-// ===== THEME TOGGLE =====
+// ========================================
+// THEME TOGGLE
+// ========================================
 function initThemeToggle() {
     const toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+
     const icon = toggle.querySelector('i');
 
+    // Check saved theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        icon.className = 'fas fa-sun';
+        if (icon) icon.className = 'fas fa-sun';
     }
 
     toggle.addEventListener('click', () => {
@@ -95,19 +116,22 @@ function initThemeToggle() {
 
         if (isDark) {
             document.documentElement.removeAttribute('data-theme');
-            icon.className = 'fas fa-moon';
+            if (icon) icon.className = 'fas fa-moon';
             localStorage.setItem('theme', 'light');
         } else {
             document.documentElement.setAttribute('data-theme', 'dark');
-            icon.className = 'fas fa-sun';
+            if (icon) icon.className = 'fas fa-sun';
             localStorage.setItem('theme', 'dark');
         }
     });
 }
 
-// ===== CURSOR GLOW =====
+// ========================================
+// CURSOR GLOW
+// ========================================
 function initCursorGlow() {
     const glow = document.getElementById('cursorGlow');
+    if (!glow) return;
 
     document.addEventListener('mousemove', (e) => {
         glow.style.left = e.clientX + 'px';
@@ -115,9 +139,12 @@ function initCursorGlow() {
     });
 }
 
-// ===== SCROLL EFFECTS =====
+// ========================================
+// SCROLL EFFECTS
+// ========================================
 function initScrollEffects() {
     const navbar = document.getElementById('navbar');
+    if (!navbar) return;
 
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -128,7 +155,9 @@ function initScrollEffects() {
     });
 }
 
-// ===== FILTER BUTTONS =====
+// ========================================
+// FILTER BUTTONS
+// ========================================
 function initFilterButtons() {
     const buttons = document.querySelectorAll('.filter-btn');
 
@@ -161,7 +190,40 @@ function filterProjects(filter) {
     });
 }
 
-// ===== FETCH DATA =====
+// ========================================
+// CONTACT FORM
+// ========================================
+function initContactForm() {
+    const form = document.getElementById('contactForm');
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-check"></i> Sent!';
+            btn.style.background = '#48bb78';
+            btn.style.boxShadow = '0 4px 20px rgba(72, 187, 120, 0.3)';
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.background = '';
+                btn.style.boxShadow = '';
+                form.reset();
+            }, 3000);
+        }, 2000);
+    });
+}
+
+// ========================================
+// FETCH DATA
+// ========================================
 async function fetchData() {
     try {
         // Fetch stats
@@ -174,7 +236,7 @@ async function fetchData() {
             renderSkills(stats);
         }
 
-        // Fetch repositories (including private ones)
+        // Fetch repositories
         const reposRes = await fetch('/api/portfolio/repos?excludeForks=false&excludeArchived=false&sortBy=updated');
         if (reposRes.ok) {
             const repos = await reposRes.json();
@@ -182,17 +244,25 @@ async function fetchData() {
         }
     } catch (error) {
         console.error('Error fetching data:', error);
-        // Show fallback projects if API fails
         renderFallbackProjects();
     }
 }
 
-// ===== UPDATE STATS =====
+// ========================================
+// UPDATE STATS
+// ========================================
 function updateStats(stats) {
-    document.getElementById('statRepos').textContent = stats.totalRepos || 0;
-    document.getElementById('statStars').textContent = stats.totalStars || 0;
-    document.getElementById('statForks').textContent = stats.totalForks || 0;
-    document.getElementById('statLanguages').textContent = Object.keys(stats.languages || {}).length || 0;
+    const elements = {
+        'statRepos': stats.totalRepos || 0,
+        'statStars': stats.totalStars || 0,
+        'statForks': stats.totalForks || 0,
+        'statLanguages': Object.keys(stats.languages || {}).length || 0
+    };
+
+    Object.keys(elements).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = elements[id];
+    });
 }
 
 function updateHeroStats(stats) {
@@ -202,11 +272,13 @@ function updateHeroStats(stats) {
     }
 }
 
-// ===== RENDER PROJECTS =====
+// ========================================
+// RENDER PROJECTS
+// ========================================
 function renderProjects(repos) {
     const grid = document.getElementById('projectsGrid');
+    if (!grid) return;
 
-    // Define category mapping for projects
     const getCategory = (name) => {
         const nameLower = name.toLowerCase();
         if (nameLower.includes('mobile') || nameLower.includes('react native') || nameLower.includes('app')) return 'mobile';
@@ -215,31 +287,28 @@ function renderProjects(repos) {
         return 'web';
     };
 
-    // Project images mapping (you can add your own images)
-    const projectImages = {
+    const projectIcons = {
         'Blood Bank Management System': '🩸',
         'Crisis Management Mobile App': '🚨',
-        'Accounts Portal - Business Website': '📊',
+        'Accounts Portal': '📊',
         'default': '📁'
     };
 
-    // Get icon for project
     const getProjectIcon = (name) => {
-        for (const [key, value] of Object.entries(projectImages)) {
+        for (const [key, value] of Object.entries(projectIcons)) {
             if (name.includes(key) || key.includes(name)) {
                 return value;
             }
         }
-        return projectImages.default;
+        return projectIcons.default;
     };
 
-    // Sort repos: public first, then private
     const sortedRepos = [...repos].sort((a, b) => {
         if (a.isPrivate === b.isPrivate) return 0;
         return a.isPrivate ? 1 : -1;
     });
 
-    grid.innerHTML = sortedRepos.map((repo, index) => {
+    grid.innerHTML = sortedRepos.slice(0, 6).map((repo, index) => {
         const category = getCategory(repo.name);
         const langColor = getLanguageColor(repo.language);
         const icon = getProjectIcon(repo.name);
@@ -274,13 +343,17 @@ function renderProjects(repos) {
     }).join('');
 }
 
-// ===== FALLBACK PROJECTS (From CV) =====
+// ========================================
+// RENDER FALLBACK PROJECTS
+// ========================================
 function renderFallbackProjects() {
     const grid = document.getElementById('projectsGrid');
+    if (!grid) return;
+
     const cvProjects = [
         {
             name: 'Blood Bank Management System',
-            description: 'Full-stack web platform managing 50+ blood donor records and real-time inventory. Built with Django, Python, SQLAlchemy with CSRF protection and RBAC.',
+            description: 'Full-stack web platform managing 50+ blood donor records with Django, Python, SQLAlchemy with CSRF protection and RBAC.',
             language: 'Python',
             stars: 5,
             forks: 2,
@@ -290,7 +363,7 @@ function renderFallbackProjects() {
         },
         {
             name: 'Crisis Management Mobile App',
-            description: 'Cross-platform emergency reporting app with GPS tracking, push notifications and offline-first sync using React Native, Firebase, Node.js.',
+            description: 'Cross-platform emergency reporting app with GPS tracking, push notifications and offline-first sync using React Native, Firebase.',
             language: 'JavaScript',
             stars: 8,
             forks: 3,
@@ -299,7 +372,7 @@ function renderFallbackProjects() {
             icon: '🚨'
         },
         {
-            name: 'Accounts Portal - Business Website',
+            name: 'Accounts Portal',
             description: 'Responsive Flask site with custom Python plugins for secure client invoice portal, document uploads, and technical SEO optimization.',
             language: 'Python',
             stars: 4,
@@ -337,9 +410,13 @@ function renderFallbackProjects() {
     }).join('');
 }
 
-// ===== RENDER LANGUAGES =====
+// ========================================
+// RENDER LANGUAGES
+// ========================================
 function renderLanguages(stats) {
     const container = document.getElementById('languagesChart');
+    if (!container) return;
+
     const topLanguages = stats.topLanguages || [];
 
     if (topLanguages.length === 0) {
@@ -359,23 +436,22 @@ function renderLanguages(stats) {
         const color = getLanguageColor(lang.name);
 
         return `
-            <div style="margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px;">
-                    <span>
+            <div class="language-item">
+                <div class="lang-header">
+                    <span class="lang-name">
                         <span style="color: ${color};">●</span>
                         ${lang.name}
                     </span>
-                    <span style="color: var(--text-muted);">${lang.percentage.toFixed(1)}%</span>
+                    <span class="lang-percent">${lang.percentage.toFixed(1)}%</span>
                 </div>
-                <div style="width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
-                    <div class="language-bar" style="width: 0%; height: 100%; background: ${color}; border-radius: 4px; transition: width 1.5s ease;"
-                         data-width="${percentage}">
-                    </div>
+                <div class="language-bar-container">
+                    <div class="language-bar" style="width: 0%; background: ${color};" data-width="${percentage}"></div>
                 </div>
             </div>
         `;
     }).join('');
 
+    // Animate bars
     setTimeout(() => {
         document.querySelectorAll('.language-bar').forEach(bar => {
             const width = bar.dataset.width;
@@ -384,20 +460,18 @@ function renderLanguages(stats) {
     }, 300);
 }
 
-// ===== RENDER SKILLS =====
+// ========================================
+// RENDER SKILLS
+// ========================================
 function renderSkills(stats) {
     const container = document.getElementById('skillsGrid');
+    if (!container) return;
+
     const languages = Object.keys(stats.languages || {});
 
-    // Additional skills from CV
-    const allSkills = [
-        ...languages,
-        'Django', 'React', 'Flask', 'Node.js',
-        'SQLAlchemy', 'Firebase', 'AWS', 'Linux',
-        'cPanel', 'MySQL', 'PostgreSQL', 'ITIL',
-        'Cybersecurity', 'Networking'
-    ];
-
+    // Combine with design skills
+    const designSkills = ['Photoshop', 'Illustrator', 'Figma', 'Canva', 'InDesign'];
+    const allSkills = [...languages, ...designSkills];
     const uniqueSkills = [...new Set(allSkills)];
     const topSkills = uniqueSkills.slice(0, 16);
 
@@ -408,8 +482,9 @@ function renderSkills(stats) {
         'Django': '🎯', 'React': '⚛️', 'Flask': '🌶️',
         'Node.js': '🟢', 'SQLAlchemy': '🗄️', 'Firebase': '🔥',
         'AWS': '☁️', 'Linux': '🐧', 'cPanel': '🖥️',
-        'MySQL': '🐬', 'PostgreSQL': '🐘', 'ITIL': '📋',
-        'Cybersecurity': '🔒', 'Networking': '🌐'
+        'MySQL': '🐬', 'PostgreSQL': '🐘', 'Photoshop': '🎨',
+        'Illustrator': '✒️', 'Figma': '📐', 'Canva': '🎨',
+        'InDesign': '📖'
     };
 
     container.innerHTML = topSkills.map(skill => {
@@ -427,6 +502,7 @@ function renderSkills(stats) {
         `;
     }).join('');
 
+    // Animate skill bars
     setTimeout(() => {
         document.querySelectorAll('.skill-level-bar').forEach(bar => {
             const level = bar.dataset.level;
@@ -435,7 +511,9 @@ function renderSkills(stats) {
     }, 500);
 }
 
-// ===== LANGUAGE COLORS =====
+// ========================================
+// LANGUAGE COLORS
+// ========================================
 function getLanguageColor(language) {
     const colors = {
         'Kotlin': '#A97BFF',
@@ -468,31 +546,9 @@ function getLanguageColor(language) {
     return colors[language] || '#6c757d';
 }
 
-// ===== CONTACT FORM =====
-document.getElementById('contactForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    btn.disabled = true;
-
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-check"></i> Sent!';
-        btn.style.background = '#48bb78';
-        btn.style.boxShadow = '0 4px 20px rgba(72, 187, 120, 0.3)';
-
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            btn.style.background = '';
-            btn.style.boxShadow = '';
-            e.target.reset();
-        }, 3000);
-    }, 2000);
-});
-
-// ===== SMOOTH SCROLL =====
+// ========================================
+// SMOOTH SCROLL
+// ========================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const target = document.querySelector(this.getAttribute('href'));
@@ -502,40 +558,3 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
-
-// ===== ADD CSS FOR PROJECT BADGES =====
-const style = document.createElement('style');
-style.textContent = `
-    .project-badge {
-        font-size: 0.6rem;
-        padding: 2px 10px;
-        border-radius: 50px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    }
-    .project-badge.public {
-        background: rgba(72, 187, 120, 0.15);
-        color: #48bb78;
-    }
-    .project-badge.private {
-        background: rgba(252, 129, 129, 0.15);
-        color: #fc8181;
-    }
-    .project-card {
-        animation: fadeInUp 0.6s ease forwards;
-        opacity: 0;
-    }
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-`;
-document.head.appendChild(style);

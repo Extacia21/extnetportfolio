@@ -11,7 +11,7 @@ server:
 
 github:
   username: ${GITHUB_USERNAME:Extacia21}
-  token: ${GITHUB_TOKEN:your-token-here}
+  token: ${GITHUB_TOKEN:your_token_here}
   sync:
     cron: 0 0 */6 * * *
   api:
